@@ -1,0 +1,1 @@
+export type LabelKeys = 'firstName' | 'address' | 'goods' | 'cost' | 'quantity' | 'total' ;
