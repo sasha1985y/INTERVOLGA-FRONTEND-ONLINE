@@ -84,8 +84,42 @@ function App() {
   // }, [])
 
   //Intervolga states
-  const [products, setProducts] = useState<Product[]>([])
-  const [openEditBasketUI, setOpenEditBasketUI] = useState(false)
+  // Состояние для хранения кэша продуктов
+  const [cachedProducts, setCachedProducts] = useState<Product[] | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [openEditBasketUI, setOpenEditBasketUI] = useState(false);
+  const [openViewOrdersUI, setOpenViewOrdersUI] = useState(false);
+  const [openFormUI, setOpenFormUI] = useState(true);
+  const [formCompleted, setFormCompleted] = useState(false);
+
+  const goBascketHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (Object.values(validity).every(v => v === true)) {
+      setOpenEditBasketUI(true);
+      setOpenViewOrdersUI(false);
+      setOpenFormUI(false);
+    } else {
+      const invalidFields = Object.entries(validity)
+        .filter(([, value]) => value === false) // Фильтруем только те поля, где значение false
+        .map(([key]) => labelTexts[key as LabelKeys]); // Извлекаем тексты меток
+
+      alert(`${invalidFields.length > 1 ? "Поля :" : "Поле"} "${invalidFields.join('", "')}" ${invalidFields.length > 1 ?  "- не заполнены" : "- не заполнено"}`);
+    }
+  }
+
+  const goOpenViewOrdersHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setOpenViewOrdersUI(true);
+    setOpenEditBasketUI(false);
+    setOpenFormUI(false);
+  }
+
+  const goOpenFormHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setOpenFormUI(true);
+    setOpenEditBasketUI(false);
+    setOpenViewOrdersUI(false);
+  }
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -108,33 +142,18 @@ function App() {
 
   const labelTexts: Record<LabelKeys, string> = {
     firstName: "Ваше имя",
-    address: "Ваш адрес",
+    address: "Адрес доставки",
     goods: "Товары",
     cost: "Цена за еденицу",
-    quantity: "Количество",
+    quantity: "Количество товара",
     total: "Цена за всё"
   };
 
-  
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
     }
   };
-
-  
-  const goBascketHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (Object.values(validity).every(v => v === true)) {
-      setOpenEditBasketUI(true);
-    } else {
-      const invalidFields = Object.entries(validity)
-        .filter(([, value]) => value === false) // Фильтруем только те поля, где значение false
-        .map(([key]) => labelTexts[key as LabelKeys]); // Извлекаем тексты меток
-
-      alert(`${invalidFields.length > 1 ? "Поля :" : "Поле"} "${invalidFields.join('", "')}" ${invalidFields.length > 1 ?  "- не заполнены" : "- не заполнено"}`);
-    }
-  }
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -166,20 +185,26 @@ function App() {
     } else {
       setFormData(prev => ({ ...prev, total: '' }));
     }
-  
-    if (formData.goods) { 
-      setValidity((prevValidity) => ({
-        ...prevValidity,
-        goods: formData.goods !== '',
-      }));
-    }
-  
+
     const fetchProducts = async () => {
-      const { data } = await axios.get<Product[]>('http://127.0.0.1:8000/products/');
-      setProducts(data);
+      // Проверьте, есть ли уже кэшированные данные
+      if (!cachedProducts) {
+        const { data } = await axios.get<Product[]>('http://127.0.0.1:8000/products/');
+        setProducts(data);
+        setCachedProducts(data); // Сохраните в кэш
+      } else {
+        setProducts(cachedProducts); // Используйте кэшированные данные
+      }
     };
+    
+    if (Object.values(validity).every(v => v === true)) {
+      setFormCompleted(true);
+    } else {
+      setFormCompleted(false);
+    }
+
     fetchProducts();
-  }, [formData.goods, formData.quantity, formData.cost, products]);
+  }, [formData.goods, formData.quantity, formData.cost, products, cachedProducts, validity]);
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -249,15 +274,30 @@ function App() {
         firstName: firstNamePattern.test(value)
       }));
     }
-
-
-
   };
 
   return (
     <>
-      <div className={`${styles.app_background_window} min-vh-100 ${openEditBasketUI ? "" : "d-none"}`}>
+      <div className={`${styles.app_background_window} min-vh-100 ${openViewOrdersUI ? "" : "d-none"}`}>
         <div className={`${styles.app_background_sky} row opacity-75 min-vh-100`}>
+          <div className="d-flex justify-content-center hstack gap-2">
+            <h1 className={`${styles.app_h1} text-center text-light`}>Галерея заказов</h1>
+            <div className={styles.applogo}></div>
+          </div>
+          <div className="col-md-4">
+            <ul>
+              <li className={`${openFormUI ? "" : "d-none"}`}><span>openFormUI</span></li>
+              <li className={`${openEditBasketUI ? "" : "d-none"}`}><span>openEditBasketUI</span></li>
+              <li className={`${openViewOrdersUI ? "" : "d-none"}`}><span>openViewOrdersUI</span></li>
+            </ul>
+          </div>
+          <div className="col">
+            <button onClick={goBascketHandler} className={`btn ${formCompleted ? "btn-success" : "btn-secondary"}`} type="button">К корзине</button>
+          </div>
+          <div className="col">
+            <button onClick={goOpenFormHandler} className="btn btn-primary" type="button">К форме</button>
+          </div>
+          <div className="col-md-5"></div>
 
           {/* <div className="h-2 d-inline-block"></div>
           <h1 className={`${styles.app_h1} text-light h-2 d-inline-block text-center`}>Редактор задачи</h1>
@@ -281,10 +321,10 @@ function App() {
           <div className="h-5 d-inline-block"></div> */}
         </div>
       </div>
-      <div className={`${styles.app_background_window} min-vh-100 position-relative ${!openEditBasketUI ? "" : "d-none"}`}>
+      <div className={`${styles.app_background_window} min-vh-100 position-relative ${!openViewOrdersUI ? "" : "d-none"}`}>
         <div className={`${styles.app_background_sky} row opacity-75 min-vh-100`}>
-          <div className="d-flex justify-content-center hstack gap-2 p-1">
-            <h1 className={`${styles.app_h1} text-center text-light`}>Intervolga marketplace</h1>
+          <div className="d-flex justify-content-center hstack gap-2">
+            <h1 className={`${styles.app_h1} text-center text-light`}>Intervolga marketplace{`${openEditBasketUI ? "(корзина)" : ""}`}</h1>
             <div className={styles.applogo}></div>
           </div>
           {/* <div className="h-5 d-inline-block"></div>
@@ -356,6 +396,7 @@ function App() {
                 onChange={handleChange}
                 onKeyDown={(e) => handleKeyDown(e)}
                 required
+                readOnly={openEditBasketUI}
               />
               <div className={`${validity.firstName ? 'valid-tooltip' : 'invalid-tooltip'}`}>
                 {`${validity.firstName ? 'OK' : 'Пожалуйста введите ваше имя.'}`}
@@ -373,6 +414,7 @@ function App() {
                 placeholder="город, улица, номер дома"
                 onKeyDown={(e) => handleKeyDown(e)}
                 required
+                readOnly={openEditBasketUI}
               />
               <div className={`${validity.address ? 'valid-tooltip' : 'invalid-tooltip'}`}>
                 {`${validity.address ? 'OK' : 'Пожалуйста укажите адрес доставки.'}`}
@@ -388,9 +430,10 @@ function App() {
                 onChange={handleChange}
                 onKeyDown={(e) => handleKeyDown(e)}
                 required
+                disabled={openEditBasketUI}
               >
                 <option>{''}</option>
-                {products?.map((product: Product) => {
+                {cachedProducts?.map((product: Product) => {
                   return(
                     <option key={product.id} value={product.id}>{product.name}</option>
                   )
@@ -404,7 +447,7 @@ function App() {
             <div className="h-5 d-inline-block"></div>
             <div className="col-md-3"></div>
             <div className="col position-relative">
-              <label htmlFor="cost" className="form-label">Цена</label>
+              <label htmlFor="cost" className="form-label">Цена за еденицу</label>
               <input
                 type="text"
                 className={`form-control ${validity.cost ? 'is-valid' : 'is-invalid'}`}
@@ -437,13 +480,14 @@ function App() {
                 }}
                 onKeyDown={(e) => handleKeyDown(e)}
                 required
+                readOnly={openEditBasketUI}
               />
               <div className={`${validity.quantity ? 'valid-tooltip' : 'invalid-tooltip'}`}>
                 {`${validity.quantity ? 'OK' : 'введите количество товара.'}`}
               </div>
             </div>
             <div className="col position-relative">
-              <label htmlFor="total" className="form-label">Всего</label>
+              <label htmlFor="total" className="form-label">Цена за всё</label>
               <input
                 type="text"
                 className={`form-control ${validity.total ? 'is-valid' : 'is-invalid'}`}
@@ -461,13 +505,25 @@ function App() {
             </div>
             <div className="col-md-3"></div>
 
-            <div className="h-5 d-inline-block"></div>
-
-            <div className="col-5"></div>
-            <div className="col">
-              <button onClick={goBascketHandler} className="btn btn-primary" type="button">В корзину</button>
+            <div className="h-5 d-inline-block">
+              <ul>
+                <li className={`${openFormUI ? "" : "d-none"}`}><span>openFormUI</span></li>
+                <li className={`${openEditBasketUI ? "" : "d-none"}`}><span>openEditBasketUI</span></li>
+                <li className={`${openViewOrdersUI ? "" : "d-none"}`}><span>openViewOrdersUI</span></li>
+              </ul>
             </div>
-            <div className="col-5"></div>
+
+            <div className="col-4"></div>
+            <div className="col">
+              <button onClick={goOpenViewOrdersHandler} className="btn btn-primary" type="button">К заказам</button>
+            </div>
+            <div className="col">
+              <button onClick={openFormUI ? goBascketHandler : goOpenFormHandler} className={`btn ${formCompleted ? "btn-success" : "btn-secondary"}`} type="button">{openFormUI ? "Положить в корзину" : "Назад к форме"}</button>
+            </div>
+            {/* <div className="col">
+              <button onClick={goOpenFormHandler} className="btn btn-primary" type="button">К форме</button>
+            </div> */}
+            <div className="col-4"></div>
           </form>
         </div>
       </div>
