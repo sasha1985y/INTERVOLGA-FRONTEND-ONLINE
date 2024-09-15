@@ -8,8 +8,16 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import styles from './app.module.css';
 
 //Intervolga imports
-import { Product } from "../../intervolga-types";
-import { LabelKeys } from "../../intervolga-types";
+import {
+  Plant,
+  Warehouse,
+  Product,
+  Order,
+  LabelKeys
+} from "../../intervolga-types";
+
+import { fetchSafeServerOrders } from "../../api/index";
+import {Timer} from "../../api/timer";
 
 function App() {
   //Todo states
@@ -84,44 +92,65 @@ function App() {
   // }, [])
 
   //Intervolga states
-  // Состояние для хранения кэша продуктов
-  const [cachedProducts, setCachedProducts] = useState<Product[] | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [openEditBasketUI, setOpenEditBasketUI] = useState(false);
-  const [openViewOrdersUI, setOpenViewOrdersUI] = useState(false);
-  const [openFormUI, setOpenFormUI] = useState(true);
-  const [formCompleted, setFormCompleted] = useState(false);
-
+  const [cachedOrders, setCachedOrders] = useState<Order[] | null>(null);// Состояние для хранения кэша заказов
+  const [orders, setOrders] = useState<Order[]>([]);//Состояние массива заказов
+  const [cachedProducts, setCachedProducts] = useState<Product[] | null>(null);// Состояние для хранения кэша продуктов
+  const [products, setProducts] = useState<Product[]>([]);//Состояние массива продуктов
+  const [cachedPlants, setCachedPlants] = useState<Plant[] | null>(null);// Состояние для хранения кэша заводов
+  const [plants, setPlants] = useState<Plant[]>([]);//Состояние массива заводов
+  const [cachedWarehouses, setCachedWarehouses] = useState<Warehouse[] | null>(null);// Состояние для хранения кэша складов
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);//Состояние массива складов
+  const [openEditBasketUI, setOpenEditBasketUI] = useState(false);//Состояние отрисовки корзины
+  const [openViewOrdersUI, setOpenViewOrdersUI] = useState(false);//Состояние отрисовки заказов
+  const [openFormUI, setOpenFormUI] = useState(true);//Состояние отрисовки формы
+  const [formCompleted, setFormCompleted] = useState(false);//Состояние заполненности формы
+  const [error, setError] = useState<string | null>(null);//Состояние ошибки
+  
+  /**
+   * @description Обработчик события нажатия кнопки. Переход в корзину только поле правильного заполнения формы.
+   * @date 11/09/2024/16:20:50
+   * @param {React.MouseEvent<HTMLButtonElement>} e
+   */
   const goBascketHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (Object.values(validity).every(v => v === true)) {
-      setOpenEditBasketUI(true);
-      setOpenViewOrdersUI(false);
-      setOpenFormUI(false);
+    e.preventDefault();//отменяем действие по умолчанию чтобы не было перезагрузки страницы
+    if (Object.values(validity).every(v => v === true)) {//если все поля формы заполнены корректно
+      setOpenEditBasketUI(true);//активируем интерфейс корзины
+      setOpenViewOrdersUI(false);//деактивируем интерфейс заказов
+      setOpenFormUI(false);//деактивируем интерфейс формы
     } else {
       const invalidFields = Object.entries(validity)
         .filter(([, value]) => value === false) // Фильтруем только те поля, где значение false
         .map(([key]) => labelTexts[key as LabelKeys]); // Извлекаем тексты меток
 
-      alert(`${invalidFields.length > 1 ? "Поля :" : "Поле"} "${invalidFields.join('", "')}" ${invalidFields.length > 1 ?  "- не заполнены" : "- не заполнено"}`);
+      alert(`${invalidFields.length > 1 ? "Поля :" : "Поле"} "${invalidFields.join('", "')}" ${invalidFields.length > 1 ? "- не заполнены" : "- не заполнено"}`);
+      //выводим сообщение для пользователя
     }
   }
 
+  /**
+   * @description Обработчик события нажатия кнопки. Переход в интерфейс заказов
+   * @date 11/09/2024/17:08:53
+   * @param {React.MouseEvent<HTMLButtonElement>} e
+   */
   const goOpenViewOrdersHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    setOpenViewOrdersUI(true);
-    setOpenEditBasketUI(false);
-    setOpenFormUI(false);
+    e.preventDefault();//отменяем действие по умолчанию чтобы не было перезагрузки страницы
+    setOpenViewOrdersUI(true);//активируем интерфейс заказов
+    setOpenEditBasketUI(false);//деактивируем интерфейс корзины
+    setOpenFormUI(false);//деактивируем интерфейс формы
   }
-
+  /**
+   * @description Обработчик события нажатия кнопки. Переход в интерфейс формы
+   * @date 11/09/2024/17:23:22
+   * @param {React.MouseEvent<HTMLButtonElement>} e
+   */
   const goOpenFormHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    setOpenFormUI(true);
-    setOpenEditBasketUI(false);
-    setOpenViewOrdersUI(false);
+    e.preventDefault();//отменяем действие по умолчанию чтобы не было перезагрузки страницы
+    setOpenFormUI(true);//активируем интерфейс формы
+    setOpenEditBasketUI(false);//деактивируем интерфейс корзины
+    setOpenViewOrdersUI(false);//деактивируем интерфейс заказов
   }
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({//Начальное состояние полей формы
     firstName: '',
     address: '',
     goods: '',
@@ -131,7 +160,7 @@ function App() {
   });
 
   //Intervolga utils
-  const [validity, setValidity] = useState({
+  const [validity, setValidity] = useState({//Начальное Булево состояние полей формы
     firstName: false,
     address: false,
     goods: false,
@@ -140,7 +169,7 @@ function App() {
     total: false
   });
 
-  const labelTexts: Record<LabelKeys, string> = {
+  const labelTexts: Record<LabelKeys, string> = {//Название лейблов полей формы
     firstName: "Ваше имя",
     address: "Адрес доставки",
     goods: "Товары",
@@ -149,25 +178,43 @@ function App() {
     total: "Цена за всё"
   };
 
+  /**
+   * @description Обработчик события нажатия кнопки Enter
+   * @date 11/09/2024/17:26:11
+   * @param {(React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>)} e
+   */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-    }
+    if (e.key === 'Enter') {//Если кнопка события Enter
+      e.preventDefault();//отменяем действие по умолчанию чтобы не было перезагрузки страницы
+    }//Чтобы пользователь не мог изменять состояние невалидно заполненных полей просто нажав Enter
   };
 
+  /**
+   * @description Обработчик события нажатия кнопки Submit
+   * @date 11/09/2024/17:41:35
+   * @param {React.FormEvent<HTMLFormElement>} e
+   * @template {Order}
+   * понять двойное отрицание можно на примере:
+   * if (x != null)
+   *  return true;
+   * else
+   *  return false;
+   * или просто return !!x;
+   */
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault();//отменяем действие по умолчанию чтобы не было перезагрузки страницы
     const newValidity = {
-      firstName: !!formData.firstName,
-      address: !!formData.address,
-      goods: !!formData.goods,
+      firstName: !!formData.firstName,//Если firstName не пустое (например, не undefined, null или пустая строка), то результат будет true, иначе — false.
+      address: !!formData.address,//Если адрес указан, то будет true, иначе — false.
+      goods: !!formData.goods,//Если есть значение, то будет true, иначе — false.
       cost: /^\s*\d+(\.\d{2})?$/.test(formData.cost), // Проверяем формат подачи цены с бэка. Например 500.00
-      quantity: !!formData.quantity && /^\s*[1-9]\d*$/.test(formData.quantity),
-      total: !!formData.total
+      quantity: !!formData.quantity && /^\s*[1-9]\d*$/.test(formData.quantity),// Проверяем формат количества - все цифры кроме 0
+      total: !!formData.total//Проверяет, заполнено ли поле "Итого". Если указано значение, то будет true, иначе — false.
     };
 
     setValidity(newValidity);
-
+    //Если все поля валидны (все значения в newValidity равны true),
+    // тогда форма может быть отправлена, и данные будут выведены в консоль.
     if (Object.values(newValidity).every(v => v)) {
       console.log('Form submitted:', formData);
     }
@@ -186,14 +233,52 @@ function App() {
       setFormData(prev => ({ ...prev, total: '' }));
     }
 
+    /**
+     * @description функция получения массива товаров
+     * @date 11/09/2024/00:54:03
+     */
     const fetchProducts = async () => {
       // Проверьте, есть ли уже кэшированные данные
-      if (!cachedProducts) {
-        const { data } = await axios.get<Product[]>('http://127.0.0.1:8000/products/');
-        setProducts(data);
-        setCachedProducts(data); // Сохраните в кэш
+      try {
+
+        if (!cachedProducts) {
+          const { data } = await axios.get<Product[]>('https://api.npoint.io/4998523fd29db7f08967');
+          //const { data } = await axios.get<Product[]>('http://127.0.0.1:8000/products/');
+          setProducts(data);
+          setCachedProducts(data); // Сохраните в кэш
+        } else {
+          setProducts(cachedProducts); // Используйте кэшированные данные
+        }
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          setError(err.message); // Сообщение об ошибке от Axios
+        } else {
+          setError('Неизвестная ошибка'); // Обработка других ошибок
+        }
+      }
+    };
+
+    const fetchPlants = async () => {
+      // Проверьте, есть ли уже кэшированные данные
+      if (!cachedPlants) {
+        //const { data } = await axios.get<Plant[]>('http://127.0.0.1:8000/plants/');
+        const { data } = await axios.get<Plant[]>('https://api.npoint.io/82c21ac451a7823d79c6');
+        setPlants(data);
+        setCachedPlants(data); // Сохраните в кэш
       } else {
-        setProducts(cachedProducts); // Используйте кэшированные данные
+        setPlants(cachedPlants); // Используйте кэшированные данные
+      }
+    };
+
+    const fetchWarehouses = async () => {
+      // Проверьте, есть ли уже кэшированные данные
+      if (!cachedWarehouses) {
+        //const { data } = await axios.get<Warehouse[]>('http://127.0.0.1:8000/warehouses/');
+        const { data } = await axios.get<Warehouse[]>('https://api.npoint.io/d8583db2b80f87666bca');
+        setWarehouses(data);
+        setCachedWarehouses(data); // Сохраните в кэш
+      } else {
+        setWarehouses(cachedWarehouses); // Используйте кэшированные данные
       }
     };
     
@@ -203,11 +288,32 @@ function App() {
       setFormCompleted(false);
     }
 
+    fetchSafeServerOrders(cachedOrders, setError, setOrders, setCachedOrders);
     fetchProducts();
-  }, [formData.goods, formData.quantity, formData.cost, products, cachedProducts, validity]);
+    fetchPlants();
+    fetchWarehouses();
+  }, [
+      formData.goods,
+      formData.quantity,
+      formData.cost,
+      orders,
+      cachedOrders,
+      products,
+      cachedProducts,
+      plants,
+      cachedPlants,
+      warehouses,
+      cachedWarehouses,
+      validity
+    ]
+  );
 
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+/**
+ * @description
+ * @date 11/09/2024/19:02:05
+ * @param {(React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)} e
+ */
+const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     const isValidCost = String(products.find(product => product.id === Number(value))?.price || '');
     setFormData((prev) => ({
@@ -280,9 +386,107 @@ function App() {
     <>
       <div className={`${styles.app_background_window} min-vh-100 ${openViewOrdersUI ? "" : "d-none"}`}>
         <div className={`${styles.app_background_sky} row opacity-75 min-vh-100`}>
+          <div className="message invisible position-relative">
+            <p className={`${styles.app_dadata_msg} fs-4 text-warning bg-dark text-center`}>Исчерпан суточный лимит бесплатных запросов к сервису, который рассчитывает координаты по введённому пользователем адресу. А это значит вы не сможете создать свой заказ. Всё заработает через</p>
+            <span className={`${styles.app_dadata_msg} fs-4 text-dark text-end position-absolute bottom-60 end-50`}>{Timer()} ...(Но это неточно)</span>
+          </div>
           <div className="d-flex justify-content-center hstack gap-2">
             <h1 className={`${styles.app_h1} text-center text-light`}>Галерея заказов</h1>
             <div className={styles.applogo}></div>
+          </div>
+          {/*'Карусель'*/}
+          <div id="carouselExampleFade" className="carousel slide carousel-fade z-0">
+            <div className="carousel-inner">
+              {orders.length > 0 ? (
+                orders.map((order, index) => (
+                  <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={order.id}>
+                    <img src={`https://via.placeholder.com/800x400?text=Order+${order.id}`} className="d-block min-vh-100 opacity-0" alt={`Order ${order.id}`} />
+                    <div className="rounded bg-primary text-light fs-6 carousel-caption d-none d-md-block">
+                      {order.carts.map((cart) => (
+                        <>
+                          <div className="container text-center" key={cart.id}>
+                            <div className="row row-cols-2 row-cols-lg-6 g-1 g-lg-1">
+                              <div className="col">
+                                <div className="text-info bg-black rounded-start">Название</div>
+                              </div>
+                              <div className="col">
+                                <div className="text-info bg-black bg-gradient">Количество</div>
+                              </div>
+                              <div className="col">
+                                <div className="text-info bg-dark">Цена/шт.</div>
+                              </div>
+                              <div className="col">
+                                <div className="text-info bg-dark bg-gradient">Поставщик</div>
+                              </div>
+                              <div className="col">
+                                <div className="text-info bg-secondary">Время доставки</div>
+                              </div>
+                              <div className="col">
+                                <div className="text-info bg-secondary bg-gradient rounded-end">цена с доставкой</div>
+                              </div>
+                              {cart.cart_products.map((product) => (
+                                <>
+                                  <div className="col">
+                                    <div className={
+                                      product.product_name === "двутавр" ? "bg-info rounded-start" :
+                                      product.product_name === "уголок" ? "bg-warning rounded-start" :
+                                      product.product_name === "швеллер" ? "bg-success rounded-start" :
+                                      "bg-dark rounded-start"
+                                    }>
+                                      {product.product_name}
+                                    </div>
+                                  </div>
+                                  <div className="col">
+                                    <div className="bg-secondary">{product.quantity}</div>
+                                  </div>
+                                  <div className="col">
+                                    <div className="bg-dark bg-gradient">{product.product_price}</div>
+                                  </div>
+                                  <div className="col">
+                                    <div className="bg-dark">
+                                      {/*product.plant_name !== null && typeof product.plant_name === 'string' && product.plant_name.length >= 10 ? "" : "Завод "*/}
+                                      {product.warehouse_dealer !== null ? product.warehouse_dealer : product.plant_name}
+                                    </div>
+                                  </div>
+                                  <div className="col">
+                                    <div className="bg-black bg-gradient">{product.deliveries[0].estimated_time} ч.</div>
+                                  </div>
+                                  <div className="col">
+                                    <div className="bg-black rounded-end">{product.deliveries[0].delivery_cost}</div>
+                                  </div>
+                                </>
+                              ))}
+                            </div>
+                            <ul className="list-group list-group-horizontal">
+                              <li className="list-group-item">ID: {order.id}</li>
+                              <li className="list-group-item">Заказчик: {order.name}</li>
+                              <li className="list-group-item">Общая стоимость: {cart.general_cost}</li>
+                              <li className="list-group-item">Создано: {cart.created_at}</li>
+                            </ul>
+                          </div>
+                        </>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="row">
+                  <div className="col-5"></div>
+                  <div className="col spinner-grow text-primary" role="status"></div>
+                  <div className="col spinner-grow text-primary" role="status"></div>
+                  <div className="col spinner-grow text-primary" role="status"></div>
+                  <div className="col-5"></div>
+                </div>
+              )}
+            </div>
+            <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="prev">
+              <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span className="visually-hidden">Previous</span>
+            </button>
+            <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleFade" data-bs-slide="next">
+              <span className="carousel-control-next-icon" aria-hidden="true"></span>
+              <span className="visually-hidden">Next</span>
+            </button>
           </div>
           <div className="col-md-4">
             <ul>
@@ -432,20 +636,25 @@ function App() {
                 required
                 disabled={openEditBasketUI}
               >
-                <option>{''}</option>
+                <option className="spinner-border text-warning" >{error ? 'Сервер недоступен' : ''}</option>
                 {cachedProducts?.map((product: Product) => {
                   return(
                     <option key={product.id} value={product.id}>{product.name}</option>
                   )
                 })}
               </select>
-              <div className={`${validity.goods ? 'valid-tooltip' : 'invalid-tooltip'}`}>
-                {`${validity.goods ? 'OK' : 'Пожалуйста, выберите предмет доставки.'}`}
-              </div>
+              {
+                error ? 
+                <div className="spinner-border text-danger" role="status"></div>
+                  :
+                <div className={`${validity.goods ? 'valid-tooltip' : 'invalid-tooltip'}`}>
+                  {`${validity.goods ? 'OK' : 'Пожалуйста, выберите предмет доставки.'}`}
+                </div>
+              }
             </div>
             <div className="col-md-1"></div>
             <div className="h-5 d-inline-block"></div>
-            <div className="col-md-3"></div>
+            <div className={`${openFormUI ? "col-md-3" : "col-md-1"}`}></div>
             <div className="col position-relative">
               <label htmlFor="cost" className="form-label">Цена за еденицу</label>
               <input
@@ -520,9 +729,6 @@ function App() {
             <div className="col">
               <button onClick={openFormUI ? goBascketHandler : goOpenFormHandler} className={`btn ${formCompleted ? "btn-success" : "btn-secondary"}`} type="button">{openFormUI ? "Положить в корзину" : "Назад к форме"}</button>
             </div>
-            {/* <div className="col">
-              <button onClick={goOpenFormHandler} className="btn btn-primary" type="button">К форме</button>
-            </div> */}
             <div className="col-4"></div>
           </form>
         </div>

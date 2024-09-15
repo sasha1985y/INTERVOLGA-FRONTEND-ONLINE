@@ -30,3 +30,7 @@
     -ms-transform: scale(1.5) rotate(1440deg);
     transform: scale(1.5) rotate(1440deg);
 }
+
+.app_dadata_msg {
+    font-family: "Rubik Marker Hatch", cursive, "Arial", "Helvetica Neue", "Helvetica", sans-serif;
+}
