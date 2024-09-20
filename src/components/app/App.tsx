@@ -1,23 +1,36 @@
-import { useState, useEffect } from "react";
+//Библиотеки
+import { useEffect } from "react";
 import axios from "axios";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-//Todo imports
-//import { Todo } from "../../types";
+//Стили
 import styles from './app.module.css';
 
-//Intervolga imports
+//Типы
 import {
   Plant,
   Warehouse,
-  Product,
-  Order,
-  LabelKeys
+  Product
 } from "../../intervolga-types";
 
+//Функции
 import { fetchSafeServerOrders } from "../../api/index";
-import {Timer} from "../../api/timer";
+import { Timer } from "../../api/timer";
+
+//Обработчики
+import {
+  goBascketHandler,
+  goOpenViewOrdersHandler,
+  goOpenFormHandler,
+  handleKeyDown,
+  handleChange
+} from "../../handlers";
+
+//Константы
+
+//Хуки
+import { useAppState } from '../../hooks/useappstate.hook';
 
 function App() {
   //Todo states
@@ -90,104 +103,39 @@ function App() {
   //   }
   //   fetchTodos();
   // }, [])
-
-  //Intervolga states
-  const [cachedOrders, setCachedOrders] = useState<Order[] | null>(null);// Состояние для хранения кэша заказов
-  const [orders, setOrders] = useState<Order[]>([]);//Состояние массива заказов
-  const [cachedProducts, setCachedProducts] = useState<Product[] | null>(null);// Состояние для хранения кэша продуктов
-  const [products, setProducts] = useState<Product[]>([]);//Состояние массива продуктов
-  const [cachedPlants, setCachedPlants] = useState<Plant[] | null>(null);// Состояние для хранения кэша заводов
-  const [plants, setPlants] = useState<Plant[]>([]);//Состояние массива заводов
-  const [cachedWarehouses, setCachedWarehouses] = useState<Warehouse[] | null>(null);// Состояние для хранения кэша складов
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);//Состояние массива складов
-  const [openEditBasketUI, setOpenEditBasketUI] = useState(false);//Состояние отрисовки корзины
-  const [openViewOrdersUI, setOpenViewOrdersUI] = useState(false);//Состояние отрисовки заказов
-  const [openFormUI, setOpenFormUI] = useState(true);//Состояние отрисовки формы
-  const [formCompleted, setFormCompleted] = useState(false);//Состояние заполненности формы
-  const [error, setError] = useState<string | null>(null);//Состояние ошибки
   
-  /**
-   * @description Обработчик события нажатия кнопки. Переход в корзину только поле правильного заполнения формы.
-   * @date 11/09/2024/16:20:50
-   * @param {React.MouseEvent<HTMLButtonElement>} e
-   */
-  const goBascketHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();//отменяем действие по умолчанию чтобы не было перезагрузки страницы
-    if (Object.values(validity).every(v => v === true)) {//если все поля формы заполнены корректно
-      setOpenEditBasketUI(true);//активируем интерфейс корзины
-      setOpenViewOrdersUI(false);//деактивируем интерфейс заказов
-      setOpenFormUI(false);//деактивируем интерфейс формы
-    } else {
-      const invalidFields = Object.entries(validity)
-        .filter(([, value]) => value === false) // Фильтруем только те поля, где значение false
-        .map(([key]) => labelTexts[key as LabelKeys]); // Извлекаем тексты меток
-
-      alert(`${invalidFields.length > 1 ? "Поля :" : "Поле"} "${invalidFields.join('", "')}" ${invalidFields.length > 1 ? "- не заполнены" : "- не заполнено"}`);
-      //выводим сообщение для пользователя
-    }
-  }
-
-  /**
-   * @description Обработчик события нажатия кнопки. Переход в интерфейс заказов
-   * @date 11/09/2024/17:08:53
-   * @param {React.MouseEvent<HTMLButtonElement>} e
-   */
-  const goOpenViewOrdersHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();//отменяем действие по умолчанию чтобы не было перезагрузки страницы
-    setOpenViewOrdersUI(true);//активируем интерфейс заказов
-    setOpenEditBasketUI(false);//деактивируем интерфейс корзины
-    setOpenFormUI(false);//деактивируем интерфейс формы
-  }
-  /**
-   * @description Обработчик события нажатия кнопки. Переход в интерфейс формы
-   * @date 11/09/2024/17:23:22
-   * @param {React.MouseEvent<HTMLButtonElement>} e
-   */
-  const goOpenFormHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();//отменяем действие по умолчанию чтобы не было перезагрузки страницы
-    setOpenFormUI(true);//активируем интерфейс формы
-    setOpenEditBasketUI(false);//деактивируем интерфейс корзины
-    setOpenViewOrdersUI(false);//деактивируем интерфейс заказов
-  }
-
-  const [formData, setFormData] = useState({//Начальное состояние полей формы
-    firstName: '',
-    address: '',
-    goods: '',
-    cost: '',
-    quantity: '0',
-    total: ''
-  });
-
-  //Intervolga utils
-  const [validity, setValidity] = useState({//Начальное Булево состояние полей формы
-    firstName: false,
-    address: false,
-    goods: false,
-    cost: false,
-    quantity: false,
-    total: false
-  });
-
-  const labelTexts: Record<LabelKeys, string> = {//Название лейблов полей формы
-    firstName: "Ваше имя",
-    address: "Адрес доставки",
-    goods: "Товары",
-    cost: "Цена за еденицу",
-    quantity: "Количество товара",
-    total: "Цена за всё"
-  };
-
-  /**
-   * @description Обработчик события нажатия кнопки Enter
-   * @date 11/09/2024/17:26:11
-   * @param {(React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>)} e
-   */
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
-    if (e.key === 'Enter') {//Если кнопка события Enter
-      e.preventDefault();//отменяем действие по умолчанию чтобы не было перезагрузки страницы
-    }//Чтобы пользователь не мог изменять состояние невалидно заполненных полей просто нажав Enter
-  };
+  const {
+    cachedOrders,
+    setCachedOrders,
+    orders,
+    setOrders,
+    cachedProducts,
+    setCachedProducts,
+    products,
+    setProducts,
+    cachedPlants,
+    setCachedPlants,
+    plants,
+    setPlants,
+    cachedWarehouses,
+    setCachedWarehouses,
+    warehouses,
+    setWarehouses,
+    openEditBasketUI,
+    setOpenEditBasketUI,
+    openViewOrdersUI,
+    setOpenViewOrdersUI,
+    openFormUI,
+    setOpenFormUI,
+    formCompleted,
+    setFormCompleted,
+    error,
+    setError,
+    formData,
+    setFormData,
+    validity,
+    setValidity
+  } = useAppState();
 
   /**
    * @description Обработчик события нажатия кнопки Submit
@@ -288,107 +236,27 @@ function App() {
       setFormCompleted(false);
     }
 
-    fetchSafeServerOrders(cachedOrders, setError, setOrders, setCachedOrders);
     fetchProducts();
     fetchPlants();
     fetchWarehouses();
-  }, [
-      formData.goods,
-      formData.quantity,
-      formData.cost,
-      orders,
-      cachedOrders,
-      products,
-      cachedProducts,
-      plants,
-      cachedPlants,
-      warehouses,
-      cachedWarehouses,
-      validity
-    ]
+
+    const intervalId = setInterval(() => {
+      fetchSafeServerOrders(cachedOrders, setError, setOrders, setCachedOrders);
+    }, 30000); // Проверяем каждые 30 секунд
+
+    // Очищаем интервал, когда компонент размонтируется
+    return () => clearInterval(intervalId);
+
+  }, [formData.goods, formData.quantity, formData.cost, orders, cachedOrders, products, cachedProducts, plants, cachedPlants, warehouses, cachedWarehouses, validity, setFormData, setProducts, setCachedProducts, setError, setPlants, setCachedPlants, setWarehouses, setCachedWarehouses, setFormCompleted, setOrders, setCachedOrders]
   );
-
-/**
- * @description
- * @date 11/09/2024/19:02:05
- * @param {(React.ChangeEvent<HTMLInputElement | HTMLSelectElement>)} e
- */
-const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    const isValidCost = String(products.find(product => product.id === Number(value))?.price || '');
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-      ...(name === 'goods' && {
-        cost: isValidCost,
-      }),
-      ...(name === 'quantity' && {
-        total: String((products.find(product => product.id === Number(formData.goods))?.price || 0) * Number(value)),
-      }),
-    }));
-    
-    if (name === 'goods') {
-      const selectedProduct = products.find(product => product.id === Number(value));
-      const isValidCost = selectedProduct && selectedProduct.price > 0;
-      setValidity((prevValidity) => ({
-        ...prevValidity,
-        goods: value !== '' ? true : false,
-        cost: isValidCost ? true : false,
-        total: selectedProduct && prevValidity.quantity ? true : false
-      }));
-    }
-
-    if (name === 'cost') {
-      const costPattern = /^\s*\d+(\.\d{2})?$/; // Проверяем формат 500.00
-      const isValidCost = value !== '' && costPattern.test(value)
-      setValidity((prevValidity) => ({
-        ...prevValidity,
-        cost: isValidCost,
-      }));
-    }
-
-    if (name === 'quantity') {
-      const quantityPattern = /^\s*[1-9]\d*$/;
-      const isValidQuantity = quantityPattern.test(value);
-      const isNotNullQuantity = value !== '0';
-      setValidity((prevValidity) => ({
-        ...prevValidity,
-        quantity: isValidQuantity,
-        total: isNotNullQuantity && prevValidity.goods ? true : false
-      }));
-    }
-  
-    if (name === 'total') {
-      setValidity((prevValidity) => ({
-        ...prevValidity,
-        total: value !== '' ? true : false// Проверяем, что поле total не пустое
-      }));
-    }
-
-    if (name === 'address') {
-      const addressPattern = /^[A-Za-zА-Яа-яЁё\s]+,\s*[A-Za-zА-Яа-яЁё\s]+\s*\d+$/;
-      setValidity((prevValidity) => ({
-        ...prevValidity,
-        address: addressPattern.test(value)
-      }));
-    }
-
-    if (name === 'firstName') {
-      const firstNamePattern = /^[A-Za-zА-Яа-яЁё\s]+$/;
-      setValidity((prevValidity) => ({
-        ...prevValidity,
-        firstName: firstNamePattern.test(value)
-      }));
-    }
-  };
 
   return (
     <>
       <div className={`${styles.app_background_window} min-vh-100 ${openViewOrdersUI ? "" : "d-none"}`}>
         <div className={`${styles.app_background_sky} row opacity-75 min-vh-100`}>
-          <div className="message invisible position-relative">
-            <p className={`${styles.app_dadata_msg} fs-4 text-warning bg-dark text-center`}>Исчерпан суточный лимит бесплатных запросов к сервису, который рассчитывает координаты по введённому пользователем адресу. А это значит вы не сможете создать свой заказ. Всё заработает через</p>
-            <span className={`${styles.app_dadata_msg} fs-4 text-dark text-end position-absolute bottom-60 end-50`}>{Timer()} ...(Но это неточно)</span>
+          <div className="position-relative">
+            <p className={`${styles.app_dadata_msg} message fs-4 text-warning bg-dark text-center`}></p>
+            <span className={`${styles.app_dadata_msg} invisible timer fs-4 text-dark text-end position-absolute bottom-60 end-50`}>{Timer()} ...(Но это неточно)</span>
           </div>
           <div className="d-flex justify-content-center hstack gap-2">
             <h1 className={`${styles.app_h1} text-center text-light`}>Галерея заказов</h1>
@@ -472,9 +340,9 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
               ) : (
                 <div className="row">
                   <div className="col-5"></div>
+                  <div className="col spinner-grow text-light" role="status"></div>
                   <div className="col spinner-grow text-primary" role="status"></div>
-                  <div className="col spinner-grow text-primary" role="status"></div>
-                  <div className="col spinner-grow text-primary" role="status"></div>
+                  <div className="col spinner-grow text-danger" role="status"></div>
                   <div className="col-5"></div>
                 </div>
               )}
@@ -496,10 +364,28 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
             </ul>
           </div>
           <div className="col">
-            <button onClick={goBascketHandler} className={`btn ${formCompleted ? "btn-success" : "btn-secondary"}`} type="button">К корзине</button>
+            <button
+            onClick={(e) => {
+              goBascketHandler(
+                e,
+                setOpenEditBasketUI,
+                setOpenViewOrdersUI,
+                setOpenFormUI,
+                validity
+              );
+            }}
+            className={`btn ${formCompleted ? "btn-success" : "btn-secondary"}`}
+            type="button">К корзине</button>
           </div>
           <div className="col">
-            <button onClick={goOpenFormHandler} className="btn btn-primary" type="button">К форме</button>
+            <button onClick={(e) => {
+              goOpenFormHandler(
+                e,
+                setOpenEditBasketUI,
+                setOpenViewOrdersUI,
+                setOpenFormUI,
+              );
+            }} className="btn btn-primary" type="button">К форме</button>
           </div>
           <div className="col-md-5"></div>
 
@@ -597,7 +483,13 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
                 id="firstName"
                 name="firstName"
                 value={formData.firstName}
-                onChange={handleChange}
+                onChange={(e) => handleChange(
+                  e,
+                  products,
+                  formData,
+                  setFormData,
+                  setValidity
+                )}
                 onKeyDown={(e) => handleKeyDown(e)}
                 required
                 readOnly={openEditBasketUI}
@@ -614,7 +506,13 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
                 id="address"
                 name="address"
                 value={formData.address}
-                onChange={handleChange}
+                onChange={(e) => handleChange(
+                  e,
+                  products,
+                  formData,
+                  setFormData,
+                  setValidity
+                )}
                 placeholder="город, улица, номер дома"
                 onKeyDown={(e) => handleKeyDown(e)}
                 required
@@ -631,7 +529,13 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
                 id="goods"
                 name="goods"
                 value={formData.goods}
-                onChange={handleChange}
+                onChange={(e) => handleChange(
+                  e,
+                  products,
+                  formData,
+                  setFormData,
+                  setValidity
+                )}
                 onKeyDown={(e) => handleKeyDown(e)}
                 required
                 disabled={openEditBasketUI}
@@ -663,7 +567,13 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
                 id="cost"
                 name="cost"
                 value={formData.cost}
-                onChange={handleChange}
+                onChange={(e) => handleChange(
+                  e,
+                  products,
+                  formData,
+                  setFormData,
+                  setValidity
+                )}
                 onKeyDown={(e) => handleKeyDown(e)}
                 required
                 readOnly
@@ -684,7 +594,13 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
                   const newValue = Number(e.target.value);
                   // Проверяем, что новое значение не меньше 0
                   if (newValue >= 0) {
-                    handleChange(e); // Вызываем основной обработчик изменения
+                    handleChange(
+                      e,
+                      products,
+                      formData,
+                      setFormData,
+                      setValidity
+                    ); // Вызываем основной обработчик изменения
                   }
                 }}
                 onKeyDown={(e) => handleKeyDown(e)}
@@ -703,7 +619,13 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
                 id="total"
                 name="total"
                 value={formData.total}
-                onChange={handleChange}
+                onChange={(e) => handleChange(
+                  e,
+                  products,
+                  formData,
+                  setFormData,
+                  setValidity
+                )}
                 onKeyDown={(e) => handleKeyDown(e)}
                 required
                 readOnly
@@ -713,7 +635,6 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
               </div>
             </div>
             <div className="col-md-3"></div>
-
             <div className="h-5 d-inline-block">
               <ul>
                 <li className={`${openFormUI ? "" : "d-none"}`}><span>openFormUI</span></li>
@@ -721,13 +642,27 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
                 <li className={`${openViewOrdersUI ? "" : "d-none"}`}><span>openViewOrdersUI</span></li>
               </ul>
             </div>
-
             <div className="col-4"></div>
             <div className="col">
-              <button onClick={goOpenViewOrdersHandler} className="btn btn-primary" type="button">К заказам</button>
+              <button onClick={(e) => {
+                goOpenViewOrdersHandler(
+                  e,
+                  setOpenEditBasketUI,
+                  setOpenViewOrdersUI,
+                  setOpenFormUI
+                );
+              }} className="btn btn-primary" type="button">К заказам</button>
             </div>
             <div className="col">
-              <button onClick={openFormUI ? goBascketHandler : goOpenFormHandler} className={`btn ${formCompleted ? "btn-success" : "btn-secondary"}`} type="button">{openFormUI ? "Положить в корзину" : "Назад к форме"}</button>
+              <button
+                onClick={(e) => openFormUI
+                  ? goBascketHandler(e, setOpenEditBasketUI, setOpenViewOrdersUI, setOpenFormUI, validity)
+                  : goOpenFormHandler}
+                className={`btn ${formCompleted ? "btn-success" : "btn-secondary"}`}
+                type="button"
+              >
+                {openFormUI ? "Положить в корзину" : "Назад к форме"}
+              </button>
             </div>
             <div className="col-4"></div>
           </form>

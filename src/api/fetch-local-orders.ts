@@ -2,14 +2,12 @@
 import axios from 'axios';
 //Типы
 import { Order } from '../intervolga-types/order.type';
-//Функции
-import { fetchFromLocalSource } from './fetch-local-orders';
 //Константы
-import { ORDERS_SERVER_LINK } from '../const';
+import { ORDERS } from '../const';
 
 /**
-   * @description Функция, которая пытается получить данные с реального сервера.
-   * @date 17/09/2024/21:41:59
+   * @description Функция, которая пытается получить данные из локального файла.
+   * @date 17/09/2024/22:18:51
    * @author Kuyantsev Aleksandr https://dixie-34.ru https://vk.com/karkade2021 https://t.me/d_e_p_L_o_y_1
    * @param cachedOrders: Order[] | null,
      @param setError: React.Dispatch<React.SetStateAction<string | null>>,
@@ -17,7 +15,7 @@ import { ORDERS_SERVER_LINK } from '../const';
      @param setCachedOrders: (value: React.SetStateAction<Order[] | null>) => void,
      @param message: HTMLElement | null,
      @param timer: HTMLElement | null
-   * @example const fetchFromPrimarySource = async (
+   * @example const fetchFromLocalSource = async(
                 cachedOrders: Order[] | null,
                 setError: React.Dispatch<React.SetStateAction<string | null>>,
                 setOrders: (value: React.SetStateAction<Order[]>) => void,
@@ -27,12 +25,12 @@ import { ORDERS_SERVER_LINK } from '../const';
                 ) => {
                 try {
                     if (!cachedOrders) {
-                        const { data } = await axios.get<Order[]>(ORDERS_SERVER_LINK);
+                        const data  = <Order[]>(ORDERS);
                         setOrders(data);
                         setCachedOrders(data); // Сохраните в кэш
                         if (message) {
-                            message.textContent = "Соединение с сервером стабильно";
-                            timer?.classList.add('invisible');
+                            message.textContent = "Разорвано соедиение с сервером. Пытаемся восстановить соединение.... Если недоступен сервис Dadata, то всё заработает через";
+                            timer?.classList.remove('invisible');
                         }
                     } else {
                         setOrders(cachedOrders); // Используйте кэшированные данные
@@ -41,14 +39,13 @@ import { ORDERS_SERVER_LINK } from '../const';
                     if (axios.isAxiosError(err)) {
                         setError(err.message); // Сообщение об ошибке от Axios
                         // Если не удалось получить данные с основного сервера, пробуем запасной источник
-                        fetchFromLocalSource(cachedOrders, setError, setOrders, setCachedOrders, message, timer);
                     } else {
                         setError('Неизвестная ошибка'); // Обработка других ошибок
                     }
                 }
             };
    */
-export const fetchFromPrimarySource = async (
+export const fetchFromLocalSource = async(
     cachedOrders: Order[] | null,
     setError: React.Dispatch<React.SetStateAction<string | null>>,
     setOrders: (value: React.SetStateAction<Order[]>) => void,
@@ -58,12 +55,12 @@ export const fetchFromPrimarySource = async (
     ) => {
     try {
         if (!cachedOrders) {
-            const { data } = await axios.get<Order[]>(ORDERS_SERVER_LINK);
+            const data  = <Order[]>(ORDERS);
             setOrders(data);
             setCachedOrders(data); // Сохраните в кэш
             if (message) {
-                message.textContent = "Соединение с сервером стабильно";
-                timer?.classList.add('invisible');
+                message.textContent = "Разорвано соедиение с сервером. Пытаемся восстановить соединение.... Если недоступен сервис Dadata, то всё заработает через";
+                timer?.classList.remove('invisible');
             }
         } else {
             setOrders(cachedOrders); // Используйте кэшированные данные
@@ -72,7 +69,6 @@ export const fetchFromPrimarySource = async (
         if (axios.isAxiosError(err)) {
             setError(err.message); // Сообщение об ошибке от Axios
             // Если не удалось получить данные с основного сервера, пробуем запасной источник
-            fetchFromLocalSource(cachedOrders, setError, setOrders, setCachedOrders, message, timer);
         } else {
             setError('Неизвестная ошибка'); // Обработка других ошибок
         }
