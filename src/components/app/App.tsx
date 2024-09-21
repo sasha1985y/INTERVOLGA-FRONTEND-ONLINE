@@ -1,6 +1,5 @@
 //Библиотеки
 import { useEffect } from "react";
-import axios from "axios";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -9,8 +8,6 @@ import styles from './app.module.css';
 
 //Типы
 import {
-  Plant,
-  Warehouse,
   Product
 } from "../../intervolga-types";
 
@@ -105,20 +102,20 @@ function App() {
   // }, [])
   
   const {
-    cachedOrders,
-    setCachedOrders,
+    cashedOrders,
+    setCashedOrders,
     orders,
     setOrders,
-    cachedProducts,
-    setCachedProducts,
+    cashedProducts,
+    setCashedProducts,
     products,
     setProducts,
-    cachedPlants,
-    setCachedPlants,
+    cashedPlants,
+    setCashedPlants,
     plants,
     setPlants,
-    cachedWarehouses,
-    setCachedWarehouses,
+    cashedWarehouses,
+    setCashedWarehouses,
     warehouses,
     setWarehouses,
     openEditBasketUI,
@@ -180,55 +177,6 @@ function App() {
     } else {
       setFormData(prev => ({ ...prev, total: '' }));
     }
-
-    /**
-     * @description функция получения массива товаров
-     * @date 11/09/2024/00:54:03
-     */
-    const fetchProducts = async () => {
-      // Проверьте, есть ли уже кэшированные данные
-      try {
-
-        if (!cachedProducts) {
-          const { data } = await axios.get<Product[]>('https://api.npoint.io/4998523fd29db7f08967');
-          //const { data } = await axios.get<Product[]>('http://127.0.0.1:8000/products/');
-          setProducts(data);
-          setCachedProducts(data); // Сохраните в кэш
-        } else {
-          setProducts(cachedProducts); // Используйте кэшированные данные
-        }
-      } catch (err) {
-        if (axios.isAxiosError(err)) {
-          setError(err.message); // Сообщение об ошибке от Axios
-        } else {
-          setError('Неизвестная ошибка'); // Обработка других ошибок
-        }
-      }
-    };
-
-    const fetchPlants = async () => {
-      // Проверьте, есть ли уже кэшированные данные
-      if (!cachedPlants) {
-        //const { data } = await axios.get<Plant[]>('http://127.0.0.1:8000/plants/');
-        const { data } = await axios.get<Plant[]>('https://api.npoint.io/82c21ac451a7823d79c6');
-        setPlants(data);
-        setCachedPlants(data); // Сохраните в кэш
-      } else {
-        setPlants(cachedPlants); // Используйте кэшированные данные
-      }
-    };
-
-    const fetchWarehouses = async () => {
-      // Проверьте, есть ли уже кэшированные данные
-      if (!cachedWarehouses) {
-        //const { data } = await axios.get<Warehouse[]>('http://127.0.0.1:8000/warehouses/');
-        const { data } = await axios.get<Warehouse[]>('https://api.npoint.io/d8583db2b80f87666bca');
-        setWarehouses(data);
-        setCachedWarehouses(data); // Сохраните в кэш
-      } else {
-        setWarehouses(cachedWarehouses); // Используйте кэшированные данные
-      }
-    };
     
     if (Object.values(validity).every(v => v === true)) {
       setFormCompleted(true);
@@ -236,18 +184,52 @@ function App() {
       setFormCompleted(false);
     }
 
-    fetchProducts();
-    fetchPlants();
-    fetchWarehouses();
-
     const intervalId = setInterval(() => {
-      fetchSafeServerOrders(cachedOrders, setError, setOrders, setCachedOrders);
+      fetchSafeServerOrders(
+        cashedOrders,
+        cashedPlants,
+        cashedWarehouses,
+        cashedProducts,
+        setError,
+        setOrders,
+        setCashedOrders,
+        setWarehouses,
+        setCashedWarehouses,
+        setPlants,
+        setCashedPlants,
+        setProducts,
+        setCashedProducts,
+      );
     }, 30000); // Проверяем каждые 30 секунд
 
     // Очищаем интервал, когда компонент размонтируется
     return () => clearInterval(intervalId);
 
-  }, [formData.goods, formData.quantity, formData.cost, orders, cachedOrders, products, cachedProducts, plants, cachedPlants, warehouses, cachedWarehouses, validity, setFormData, setProducts, setCachedProducts, setError, setPlants, setCachedPlants, setWarehouses, setCachedWarehouses, setFormCompleted, setOrders, setCachedOrders]
+  }, [
+    formData.goods,
+    formData.quantity,
+    formData.cost,
+    orders,
+    cashedOrders,
+    products,
+    cashedProducts,
+    plants,
+    cashedPlants,
+    warehouses,
+    cashedWarehouses,
+    validity,
+    setFormData,
+    setProducts,
+    setCashedProducts,
+    setError,
+    setPlants,
+    setCashedPlants,
+    setWarehouses,
+    setCashedWarehouses,
+    setFormCompleted,
+    setOrders,
+    setCashedOrders
+  ]
   );
 
   return (
@@ -541,7 +523,7 @@ function App() {
                 disabled={openEditBasketUI}
               >
                 <option className="spinner-border text-warning" >{error ? 'Сервер недоступен' : ''}</option>
-                {cachedProducts?.map((product: Product) => {
+                {cashedProducts?.map((product: Product) => {
                   return(
                     <option key={product.id} value={product.id}>{product.name}</option>
                   )
@@ -634,6 +616,20 @@ function App() {
                 {`${validity.total ? 'OK' : 'данные не получены.'}`}
               </div>
             </div>
+            <div className={`col-md-2 ${openEditBasketUI ? "" : "d-none"}`}>
+              <div className="form-check">
+                <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1"/>
+                  <label className="form-check-label" htmlFor="flexRadioDefault1">
+                    заводы
+                  </label>
+              </div>
+              <div className="form-check">
+                <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2"/>
+                  <label className="form-check-label" htmlFor="flexRadioDefault2">
+                    склады
+                  </label>
+              </div>
+            </div>
             <div className="col-md-3"></div>
             <div className="h-5 d-inline-block">
               <ul>
@@ -657,7 +653,7 @@ function App() {
               <button
                 onClick={(e) => openFormUI
                   ? goBascketHandler(e, setOpenEditBasketUI, setOpenViewOrdersUI, setOpenFormUI, validity)
-                  : goOpenFormHandler}
+                  : goOpenFormHandler(e, setOpenEditBasketUI, setOpenViewOrdersUI, setOpenFormUI)}
                 className={`btn ${formCompleted ? "btn-success" : "btn-secondary"}`}
                 type="button"
               >

@@ -1,5 +1,10 @@
 //Типы
-import { Order } from '../intervolga-types/order.type';
+import {
+    Order,
+    Plant,
+    Warehouse,
+    Product
+} from '../intervolga-types';
 //Функции
 import { fetchFromPrimarySource } from './fetch-primary';
 
@@ -9,48 +14,126 @@ import { fetchFromPrimarySource } from './fetch-primary';
    * функция fetchFromLocalSource.
    * @date 15/09/2024/02:19:59
    * @author Kuyantsev Aleksandr https://dixie-34.ru https://vk.com/karkade2021 https://t.me/d_e_p_L_o_y_1
-   * @param cachedOrders: Order[] | null,
+   * @param cashedOrders: Order[] | null,
      @param setError: React.Dispatch<React.SetStateAction<string | null>>,
      @param setOrders: (value: React.SetStateAction<Order[]>) => void,
-     @param setCachedOrders: (value: React.SetStateAction<Order[] | null>) => void
+     @param setCashedOrders: (value: React.SetStateAction<Order[] | null>) => void
    * @example const fetchSafeServerOrders = async (
-                cachedOrders: Order[] | null,
+                cashedOrders: Order[] | null,
+                cashedPlants: Plant[] | null,
+                cashedWarehouses: Warehouse[] | null,
+                cashedProducts: Product[] | null,
                 setError: React.Dispatch<React.SetStateAction<string | null>>,
                 setOrders: (value: React.SetStateAction<Order[]>) => void,
-                setCachedOrders: (value: React.SetStateAction<Order[] | null>) => void
+                setCashedOrders: (value: React.SetStateAction<Order[] | null>) => void,
+                setWarehouses: (value: React.SetStateAction<Warehouse[]>) => void,
+                setCashedWarehouses: (value: React.SetStateAction<Warehouse[] | null>) => void,
+                setPlants: (value: React.SetStateAction<Plant[]>) => void,
+                setCashedPlants: (value: React.SetStateAction<Plant[] | null>) => void,
+                setProducts: (value: React.SetStateAction<Product[]>) => void,
+                setCashedProducts: (value: React.SetStateAction<Product[]| null>) => void
             ) => {
-                const message = document.querySelector('.message') as HTMLElement | null; // Явно указываем тип
+                const message = document.querySelector('.message') as HTMLElement | null;
                 const timer = document.querySelector('.timer') as HTMLElement | null;
 
                 // Запускаем первичный запрос
-                await fetchFromPrimarySource(cachedOrders, setError, setOrders, setCachedOrders, message, timer);
+                await fetchFromPrimarySource(
+                    cashedOrders,
+                    cashedPlants,
+                    cashedWarehouses,
+                    cashedProducts,
+                    setError,
+                    setOrders,
+                    setCashedOrders,
+                    setWarehouses,
+                    setCashedWarehouses,
+                    setPlants,
+                    setCashedPlants,
+                    setProducts,
+                    setCashedProducts,
+                    message,
+                    timer
+                );
 
-                // Устанавливаем интервал для периодической проверки
                 const intervalId = setInterval(() => {
-                    fetchFromPrimarySource(cachedOrders, setError, setOrders, setCachedOrders, message, timer);
+                    fetchFromPrimarySource(
+                        cashedOrders,
+                        cashedPlants,
+                        cashedWarehouses,
+                        cashedProducts,
+                        setError,
+                        setOrders,
+                        setCashedOrders,
+                        setWarehouses,
+                        setCashedWarehouses,
+                        setPlants,
+                        setCashedPlants,
+                        setProducts,
+                        setCashedProducts,
+                        message,
+                        timer
+                    );
                 }, 30000); // Проверяем каждые 30 секунд
 
-                // Очищаем интервал, когда компонент размонтируется
                 return () => clearInterval(intervalId);
             };
    */
 export const fetchSafeServerOrders = async (
-    cachedOrders: Order[] | null,
+    cashedOrders: Order[] | null,
+    cashedPlants: Plant[] | null,
+    cashedWarehouses: Warehouse[] | null,
+    cashedProducts: Product[] | null,
     setError: React.Dispatch<React.SetStateAction<string | null>>,
     setOrders: (value: React.SetStateAction<Order[]>) => void,
-    setCachedOrders: (value: React.SetStateAction<Order[] | null>) => void
+    setCashedOrders: (value: React.SetStateAction<Order[] | null>) => void,
+    setWarehouses: (value: React.SetStateAction<Warehouse[]>) => void,
+    setCashedWarehouses: (value: React.SetStateAction<Warehouse[] | null>) => void,
+    setPlants: (value: React.SetStateAction<Plant[]>) => void,
+    setCashedPlants: (value: React.SetStateAction<Plant[] | null>) => void,
+    setProducts: (value: React.SetStateAction<Product[]>) => void,
+    setCashedProducts: (value: React.SetStateAction<Product[]| null>) => void
 ) => {
-    const message = document.querySelector('.message') as HTMLElement | null; // Явно указываем тип
+    const message = document.querySelector('.message') as HTMLElement | null;
     const timer = document.querySelector('.timer') as HTMLElement | null;
 
     // Запускаем первичный запрос
-    await fetchFromPrimarySource(cachedOrders, setError, setOrders, setCachedOrders, message, timer);
+    await fetchFromPrimarySource(
+        cashedOrders,
+        cashedPlants,
+        cashedWarehouses,
+        cashedProducts,
+        setError,
+        setOrders,
+        setCashedOrders,
+        setWarehouses,
+        setCashedWarehouses,
+        setPlants,
+        setCashedPlants,
+        setProducts,
+        setCashedProducts,
+        message,
+        timer
+    );
 
-    // Устанавливаем интервал для периодической проверки
     const intervalId = setInterval(() => {
-        fetchFromPrimarySource(cachedOrders, setError, setOrders, setCachedOrders, message, timer);
+        fetchFromPrimarySource(
+            cashedOrders,
+            cashedPlants,
+            cashedWarehouses,
+            cashedProducts,
+            setError,
+            setOrders,
+            setCashedOrders,
+            setWarehouses,
+            setCashedWarehouses,
+            setPlants,
+            setCashedPlants,
+            setProducts,
+            setCashedProducts,
+            message,
+            timer
+        );
     }, 30000); // Проверяем каждые 30 секунд
 
-    // Очищаем интервал, когда компонент размонтируется
     return () => clearInterval(intervalId);
 };
