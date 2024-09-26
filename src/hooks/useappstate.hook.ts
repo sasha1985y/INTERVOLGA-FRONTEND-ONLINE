@@ -91,6 +91,7 @@ export const useAppState = () => {
     const [openFormUI, setOpenFormUI] = useState(true);//Состояние отрисовки формы
     const [formCompleted, setFormCompleted] = useState(false);//Состояние заполненности формы
     const [error, setError] = useState<string | null>(null);//Состояние ошибки
+    const [selectedOption, setSelectedOption] = useState('plants'); // 'plants' или 'warehouses'
   
     const [formData, setFormData] = useState({//Начальное состояние полей формы
       firstName: '',
@@ -98,7 +99,8 @@ export const useAppState = () => {
       goods: '',
       cost: '',
       quantity: '0',
-      total: ''
+      total: '',
+      suppliers: ''
     });
   
     const [validity, setValidity] = useState({//Начальное Булево состояние полей формы
@@ -107,7 +109,8 @@ export const useAppState = () => {
       goods: false,
       cost: false,
       quantity: false,
-      total: false
+      total: false,
+      suppliers: false
     });
 
     return {
@@ -140,6 +143,8 @@ export const useAppState = () => {
         formData,
         setFormData,
         validity,
-        setValidity
+        setValidity,
+        selectedOption,
+        setSelectedOption
     };
 };

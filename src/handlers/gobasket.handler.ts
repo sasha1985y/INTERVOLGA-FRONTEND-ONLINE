@@ -58,6 +58,7 @@ export const goBascketHandler = (
         cost: boolean;
         quantity: boolean;
         total: boolean;
+        suppliers: boolean;
     }
 ) => {
     e.preventDefault();//отменяем действие по умолчанию чтобы не было перезагрузки страницы

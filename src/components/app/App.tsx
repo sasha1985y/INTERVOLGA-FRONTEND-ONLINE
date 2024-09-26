@@ -24,6 +24,7 @@ import {
   handleChange
 } from "../../handlers";
 
+
 //Константы
 
 //Хуки
@@ -131,9 +132,14 @@ function App() {
     formData,
     setFormData,
     validity,
-    setValidity
+    setValidity,
+    selectedOption,
+    setSelectedOption
   } = useAppState();
-
+  
+  const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,) => {
+    setSelectedOption(e.target.id === 'flexRadioDefault1' ? 'plants' : 'warehouses');
+  };
   /**
    * @description Обработчик события нажатия кнопки Submit
    * @date 11/09/2024/17:41:35
@@ -154,7 +160,8 @@ function App() {
       goods: !!formData.goods,//Если есть значение, то будет true, иначе — false.
       cost: /^\s*\d+(\.\d{2})?$/.test(formData.cost), // Проверяем формат подачи цены с бэка. Например 500.00
       quantity: !!formData.quantity && /^\s*[1-9]\d*$/.test(formData.quantity),// Проверяем формат количества - все цифры кроме 0
-      total: !!formData.total//Проверяет, заполнено ли поле "Итого". Если указано значение, то будет true, иначе — false.
+      total: !!formData.total,//Проверяет, заполнено ли поле "Итого". Если указано значение, то будет true, иначе — false.
+      suppliers: !!formData.suppliers
     };
 
     setValidity(newValidity);
@@ -477,7 +484,7 @@ function App() {
                 readOnly={openEditBasketUI}
               />
               <div className={`${validity.firstName ? 'valid-tooltip' : 'invalid-tooltip'}`}>
-                {`${validity.firstName ? 'OK' : 'Пожалуйста введите ваше имя.'}`}
+                {`${validity.firstName ? 'OK' : 'введите ваше имя.'}`}
               </div>
             </div>
             <div className="col-md-4 position-relative">
@@ -501,11 +508,14 @@ function App() {
                 readOnly={openEditBasketUI}
               />
               <div className={`${validity.address ? 'valid-tooltip' : 'invalid-tooltip'}`}>
-                {`${validity.address ? 'OK' : 'Пожалуйста укажите адрес доставки.'}`}
+                {`${validity.address ? 'OK' : 'укажите адрес доставки.'}`}
               </div>
             </div>
             <div className="col-md-3 position-relative">
-              <label htmlFor="" className="form-label">Товары</label>
+              <div className="d-flex justify-content-between hstack gap-2">
+                <label htmlFor="" className="form-label" role="status">Товары</label>
+                <div className={`${error ? 'spinner-border text-danger' : ''}`} role="status"></div>
+              </div>
               <select
                 className={`form-select ${validity.goods ? 'is-valid' : 'is-invalid'}`}
                 id="goods"
@@ -522,25 +532,23 @@ function App() {
                 required
                 disabled={openEditBasketUI}
               >
-                <option className="spinner-border text-warning" >{error ? 'Сервер недоступен' : ''}</option>
+                <option>{error ? 'Сервер недоступен' : ''}</option>
                 {cashedProducts?.map((product: Product) => {
                   return(
                     <option key={product.id} value={product.id}>{product.name}</option>
                   )
                 })}
               </select>
-              {
-                error ? 
-                <div className="spinner-border text-danger" role="status"></div>
-                  :
-                <div className={`${validity.goods ? 'valid-tooltip' : 'invalid-tooltip'}`}>
-                  {`${validity.goods ? 'OK' : 'Пожалуйста, выберите предмет доставки.'}`}
-                </div>
-              }
+              {/* <div className="d-flex justify-content-start hstack gap-2">
+                <span className={`${error ? "spinner-border text-danger" : ""}`} role="status"></span>
+              </div> */}
+              <div className={`${validity.goods ? 'valid-tooltip' : 'invalid-tooltip'}`}>
+                {`${validity.goods ? 'OK' : ' выберите предмет доставки.'}`}
+              </div>
             </div>
             <div className="col-md-1"></div>
             <div className="h-5 d-inline-block"></div>
-            <div className={`${openFormUI ? "col-md-3" : "col-md-1"}`}></div>
+            <div className="col-md-1"></div>
             <div className="col position-relative">
               <label htmlFor="cost" className="form-label">Цена за еденицу</label>
               <input
@@ -581,7 +589,8 @@ function App() {
                       products,
                       formData,
                       setFormData,
-                      setValidity
+                      setValidity,
+
                     ); // Вызываем основной обработчик изменения
                   }
                 }}
@@ -590,7 +599,7 @@ function App() {
                 readOnly={openEditBasketUI}
               />
               <div className={`${validity.quantity ? 'valid-tooltip' : 'invalid-tooltip'}`}>
-                {`${validity.quantity ? 'OK' : 'введите количество товара.'}`}
+                {`${validity.quantity ? 'OK' : 'количество товара'}`}
               </div>
             </div>
             <div className="col position-relative">
@@ -616,18 +625,65 @@ function App() {
                 {`${validity.total ? 'OK' : 'данные не получены.'}`}
               </div>
             </div>
-            <div className={`col-md-2 ${openEditBasketUI ? "" : "d-none"}`}>
-              <div className="form-check">
-                <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1"/>
+            {/*Чекбоксы завод или склад*/}
+            <div className="col-md-3 position-relative">
+              <div className="d-flex justify-content-evenly hstack gap-2">
+                <label htmlFor="" className="form-label">Поставщики:</label>
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="flexRadioDefault"
+                    id="flexRadioDefault1"
+                    checked={selectedOption === 'plants'}
+                    onChange={handleRadioChange}
+                    disabled={openEditBasketUI}
+                  />
                   <label className="form-check-label" htmlFor="flexRadioDefault1">
-                    заводы
+                    заводы или
                   </label>
-              </div>
-              <div className="form-check">
-                <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2"/>
+                </div>
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="flexRadioDefault"
+                    id="flexRadioDefault2"
+                    checked={selectedOption === 'warehouses'}
+                    onChange={handleRadioChange}
+                    disabled={openEditBasketUI}
+                  />
                   <label className="form-check-label" htmlFor="flexRadioDefault2">
                     склады
                   </label>
+                </div>
+              </div>
+              <select
+                className={`form-select ${validity.suppliers ? 'is-valid' : 'is-invalid'}`}
+                id="suppliers"
+                name="suppliers"
+                value={formData.suppliers}
+                onChange={(e) => handleChange(
+                  e,
+                  products,
+                  formData,
+                  setFormData,
+                  setValidity,
+                )}
+                onKeyDown={(e) => handleKeyDown(e)}
+                required
+                disabled={openEditBasketUI}
+              >
+                <option role="status">{error ? 'Сервер недоступен' : ''}</option>
+                {(selectedOption === 'plants' ? cashedPlants : cashedWarehouses)?.map((supplier) => {
+                  return (
+                    <option key={supplier.id} value={supplier.id}>{supplier.address}</option>
+                  );
+                })}
+              </select>
+              <div className={`${error ? 'spinner-border text-danger' : ''}`} role="status"></div>
+              <div className={`${validity.suppliers ? 'valid-tooltip' : 'invalid-tooltip'}`}>
+                {`${validity.suppliers ? 'OK' : 'Выберите поставщика.'}`}
               </div>
             </div>
             <div className="col-md-3"></div>
