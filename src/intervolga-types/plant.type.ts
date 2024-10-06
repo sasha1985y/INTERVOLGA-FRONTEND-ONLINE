@@ -4,5 +4,7 @@ export type Plant = {
     id: number,
     name: string,
     address: string,
-    manufacturer: Manufacturer
+    manufacturer: Manufacturer,
+    geo_lat: string,
+    geo_lon: string
 }
