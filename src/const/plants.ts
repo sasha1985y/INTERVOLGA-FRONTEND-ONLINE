@@ -6,16 +6,20 @@ export const PLANTS = [
         "manufacturer": {
             "id": 1,
             "name": "ООО \"Трубосталь\""
-        }
+        },
+        "geo_lat": "54.331111",
+        "geo_lon": "48.386774"
     },
     {
         "id": 2,
         "name": "\"Рассвет\"",
-        "address": "Елань, Церковная 9",
+        "address": "Елань, Ленинградская 53",
         "manufacturer": {
             "id": 1,
             "name": "ООО \"Трубосталь\""
-        }
+        },
+        "geo_lat": "51.150478",
+        "geo_lon": "41.209576"
     },
     {
         "id": 3,
@@ -24,7 +28,9 @@ export const PLANTS = [
         "manufacturer": {
             "id": 2,
             "name": "ПАО \"Сталь\""
-        }
+        },
+        "geo_lat": "48.718208",
+        "geo_lon": "44.536657"
     },
     {
         "id": 4,
@@ -33,7 +39,9 @@ export const PLANTS = [
         "manufacturer": {
             "id": 2,
             "name": "ПАО \"Сталь\""
-        }
+        },
+        "geo_lat": "59.220501",
+        "geo_lon": "39.891523"
     },
     {
         "id": 5,
@@ -42,7 +50,9 @@ export const PLANTS = [
         "manufacturer": {
             "id": 2,
             "name": "ПАО \"Сталь\""
-        }
+        },
+        "geo_lat": "48.755226",
+        "geo_lon": "44.50933"
     },
     {
         "id": 6,
@@ -51,16 +61,20 @@ export const PLANTS = [
         "manufacturer": {
             "id": 2,
             "name": "ПАО \"Сталь\""
-        }
+        },
+        "geo_lat": "56.270526",
+        "geo_lon": "43.896859"
     },
     {
         "id": 7,
         "name": "\"Завод имени Ленина\"",
-        "address": "Краснодар",
+        "address": "Краснодар, Щорса 52",
         "manufacturer": {
             "id": 2,
             "name": "ПАО \"Сталь\""
-        }
+        },
+        "geo_lat": "45.034222",
+        "geo_lon": "39.008488"
     },
     {
         "id": 8,
@@ -69,7 +83,9 @@ export const PLANTS = [
         "manufacturer": {
             "id": 3,
             "name": "ООО \"Титан\""
-        }
+        },
+        "geo_lat": "55.4899516",
+        "geo_lon": "37.5486063"
     },
     {
         "id": 9,
@@ -78,15 +94,19 @@ export const PLANTS = [
         "manufacturer": {
             "id": 3,
             "name": "ООО \"Титан\""
-        }
+        },
+        "geo_lat": "55.429364",
+        "geo_lon": "37.460358"
     },
     {
         "id": 10,
         "name": "\"Сибсталь\"",
-        "address": "Рязань, Одоевского 25",
+        "address": "Рязань, Свободы 75",
         "manufacturer": {
             "id": 3,
             "name": "ООО \"Титан\""
-        }
+        },
+        "geo_lat": "54.62318",
+        "geo_lon": "39.744262"
     }
 ]
