@@ -5,7 +5,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 1,
             "name": "АО \"Луч\""
-        }
+        },
+        "geo_lat": "51.659306",
+        "geo_lon": "39.196854"
     },
     {
         "id": 2,
@@ -13,7 +15,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 5,
             "name": "ПАО \"Толк\""
-        }
+        },
+        "geo_lat": "54.192058",
+        "geo_lon": "37.615839"
     },
     {
         "id": 3,
@@ -21,7 +25,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 5,
             "name": "ПАО \"Толк\""
-        }
+        },
+        "geo_lat": "55.769945",
+        "geo_lon": "37.598133"
     },
     {
         "id": 4,
@@ -29,7 +35,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 5,
             "name": "ПАО \"Толк\""
-        }
+        },
+        "geo_lat": "54.811794",
+        "geo_lon": "32.048603"
     },
     {
         "id": 5,
@@ -37,7 +45,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 4,
             "name": "ООО \"Рать\""
-        }
+        },
+        "geo_lat": "59.221229",
+        "geo_lon": "39.894433"
     },
     {
         "id": 6,
@@ -45,7 +55,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 4,
             "name": "ООО \"Рать\""
-        }
+        },
+        "geo_lat": "50.640878",
+        "geo_lon": "36.563013"
     },
     {
         "id": 7,
@@ -53,7 +65,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 3,
             "name": "ООО \"Товарищ\""
-        }
+        },
+        "geo_lat": "53.200157",
+        "geo_lon": "50.1219"
     },
     {
         "id": 8,
@@ -61,7 +75,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 3,
             "name": "ООО \"Товарищ\""
-        }
+        },
+        "geo_lat": "56.341387",
+        "geo_lon": "43.84106"
     },
     {
         "id": 9,
@@ -69,7 +85,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 2,
             "name": "АО \"Хозяин\""
-        }
+        },
+        "geo_lat": "48.705022",
+        "geo_lon": "44.514604"
     },
     {
         "id": 10,
@@ -77,7 +95,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 2,
             "name": "АО \"Хозяин\""
-        }
+        },
+        "geo_lat": "45.051589",
+        "geo_lon": "39.001831"
     },
     {
         "id": 11,
@@ -85,7 +105,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 2,
             "name": "АО \"Хозяин\""
-        }
+        },
+        "geo_lat": "46.3655875",
+        "geo_lon": "48.0558983"
     },
     {
         "id": 12,
@@ -93,7 +115,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 2,
             "name": "АО \"Хозяин\""
-        }
+        },
+        "geo_lat": "47.221557",
+        "geo_lon": "39.710614"
     },
     {
         "id": 13,
@@ -101,7 +125,9 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 1,
             "name": "АО \"Луч\""
-        }
+        },
+        "geo_lat": "54.312338",
+        "geo_lon": "48.379713"
     },
     {
         "id": 14,
@@ -109,6 +135,8 @@ export const WAREHOUSES = [
         "dealer": {
             "id": 1,
             "name": "АО \"Луч\""
-        }
+        },
+        "geo_lat": "53.511927",
+        "geo_lon": "49.407502"
     }
 ]
