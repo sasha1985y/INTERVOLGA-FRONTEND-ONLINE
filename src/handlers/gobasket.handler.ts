@@ -29,6 +29,7 @@ import { labelTexts } from "../const/index";
                     cost: boolean;
                     quantity: boolean;
                     total: boolean;
+                    suppliers: boolean;
                 }
             ) => {
                 e.preventDefault();//отменяем действие по умолчанию чтобы не было перезагрузки страницы
