@@ -8,3 +8,5 @@ export type { Delivery } from './delivery.type.ts';
 export type { CartProduct } from './cart-product.type.ts';
 export type { Cart } from './cart.type.ts';
 export type { Order } from './order.type.ts';
+export type { FormData } from './object-formdata.type.ts';
+export type { Validity } from './validity.type.ts';
