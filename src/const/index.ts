@@ -15,3 +15,5 @@ export { PLANTS_NP_LINK } from './links';
 export { WAREHOUSES_NP_LINK } from './links';
 //Другие данные
 export { labelTexts } from './labletexts';
+export { FORMDATA } from './object-formdata';
+export { VALIDITY } from './object-validity';
