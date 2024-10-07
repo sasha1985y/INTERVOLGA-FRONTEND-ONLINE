@@ -1,4 +1,7 @@
+//Хуки
 import { useState } from "react";
+
+//Типы
 import {
     Order,
     Product,
@@ -6,9 +9,15 @@ import {
     Warehouse
 } from "../intervolga-types";
 
+//Константы
+import {
+    FORMDATA,
+    VALIDITY
+} from "../const";
+
 /**
  * @description Хранит все состояния приложения.
- * @author Kuyantsev Aleksandr https://dixie-34.ru https://vk.com/karkade2021 https://t.me/d_e_p_L_o_y_
+ * @author Kuyantsev Aleksandr https://dixie-34.ru https://vk.com/karkade2021 https://t.me/d_e_p_L_o_y_1
  * @date 20/09/2024/00:33:50
  * @example const useAppState = () => {
                 const [cashedOrders, setCashedOrders] = useState<Order[] | null>(null);// Состояние для хранения кэша заказов
@@ -24,24 +33,9 @@ import {
                 const [openFormUI, setOpenFormUI] = useState(true);//Состояние отрисовки формы
                 const [formCompleted, setFormCompleted] = useState(false);//Состояние заполненности формы
                 const [error, setError] = useState<string | null>(null);//Состояние ошибки
-            
-                const [formData, setFormData] = useState({//Начальное состояние полей формы
-                firstName: '',
-                address: '',
-                goods: '',
-                cost: '',
-                quantity: '0',
-                total: ''
-                });
-            
-                const [validity, setValidity] = useState({//Начальное Булево состояние полей формы
-                firstName: false,
-                address: false,
-                goods: false,
-                cost: false,
-                quantity: false,
-                total: false
-                });
+                const [selectedOption, setSelectedOption] = useState('plants'); // 'plants' или 'warehouses'
+                const [formData, setFormData] = useState(FORMDATA);
+                const [validity, setValidity] = useState(VALIDITY);
 
                 return {
                     cashedOrders,
@@ -73,7 +67,9 @@ import {
                     formData,
                     setFormData,
                     validity,
-                    setValidity
+                    setValidity,
+                    selectedOption,
+                    setSelectedOption
                 };
             };
  */
@@ -92,26 +88,8 @@ export const useAppState = () => {
     const [formCompleted, setFormCompleted] = useState(false);//Состояние заполненности формы
     const [error, setError] = useState<string | null>(null);//Состояние ошибки
     const [selectedOption, setSelectedOption] = useState('plants'); // 'plants' или 'warehouses'
-  
-    const [formData, setFormData] = useState({//Начальное состояние полей формы
-      firstName: '',
-      address: '',
-      goods: '',
-      cost: '',
-      quantity: '0',
-      total: '',
-      suppliers: ''
-    });
-  
-    const [validity, setValidity] = useState({//Начальное Булево состояние полей формы
-      firstName: false,
-      address: false,
-      goods: false,
-      cost: false,
-      quantity: false,
-      total: false,
-      suppliers: false
-    });
+    const [formData, setFormData] = useState(FORMDATA);
+    const [validity, setValidity] = useState(VALIDITY);
 
     return {
         cashedOrders,
