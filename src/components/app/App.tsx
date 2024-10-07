@@ -12,8 +12,10 @@ import {
 } from "../../intervolga-types";
 
 //Функции
-import { fetchSafeServerOrders } from "../../api/index";
-import { Timer } from "../../api/timer";
+import { 
+  fetchSafeServerOrders,
+  Timer
+ } from "../../api/index";
 
 //Обработчики
 import {
@@ -21,7 +23,8 @@ import {
   goOpenViewOrdersHandler,
   goOpenFormHandler,
   handleKeyDown,
-  handleChange
+  handleChange,
+  handleRadioChange
 } from "../../handlers";
 
 
@@ -137,9 +140,6 @@ function App() {
     setSelectedOption
   } = useAppState();
   
-  const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,) => {
-    setSelectedOption(e.target.id === 'flexRadioDefault1' ? 'plants' : 'warehouses');
-  };
   /**
    * @description Обработчик события нажатия кнопки Submit
    * @date 11/09/2024/17:41:35
@@ -179,7 +179,9 @@ function App() {
     const costValue = Number(selectedProduct?.price || 0);
   
     if (formData.goods && quantityValue > 0 && formData.cost) {
-      const newTotal = costValue * quantityValue;
+      //calculateDelivery(formData, plants, warehouses);
+      const baseRate = 1000; // базовая ставка
+      const newTotal = baseRate + (costValue * quantityValue);
       setFormData(prev => ({ ...prev, total: String(newTotal) }));
     } else {
       setFormData(prev => ({ ...prev, total: '' }));
@@ -464,7 +466,7 @@ function App() {
 
           <form className="row g-3 needs-validation" noValidate onSubmit={handleSubmit}>
             <div className="col-md-1"></div>
-            <div className="col-md-3 position-relative">
+            <div className="col position-relative">
               <label htmlFor="firstName" className="form-label">Ваше имя</label>
               <input
                 type="text"
@@ -511,7 +513,7 @@ function App() {
                 {`${validity.address ? 'OK' : 'укажите адрес доставки.'}`}
               </div>
             </div>
-            <div className="col-md-3 position-relative">
+            <div className="col-md-2 position-relative">
               <div className="d-flex justify-content-between hstack gap-2">
                 <label htmlFor="" className="form-label" role="status">Товары</label>
                 <div className={`${error ? 'spinner-border text-danger' : ''}`} role="status"></div>
@@ -539,11 +541,31 @@ function App() {
                   )
                 })}
               </select>
-              {/* <div className="d-flex justify-content-start hstack gap-2">
-                <span className={`${error ? "spinner-border text-danger" : ""}`} role="status"></span>
-              </div> */}
               <div className={`${validity.goods ? 'valid-tooltip' : 'invalid-tooltip'}`}>
                 {`${validity.goods ? 'OK' : ' выберите предмет доставки.'}`}
+              </div>
+            </div>
+            <div className="col position-relative">
+              <label htmlFor="cost" className="form-label">Время ожидания</label>
+              <input
+                type="text"
+                className={`form-control ${validity.cost ? 'is-valid' : 'is-invalid'}`}
+                id="cost"
+                name="cost"
+                value={formData.cost}
+                onChange={(e) => handleChange(
+                  e,
+                  products,
+                  formData,
+                  setFormData,
+                  setValidity
+                )}
+                onKeyDown={(e) => handleKeyDown(e)}
+                required
+                readOnly
+              />
+              <div className={`${validity.cost ? 'valid-tooltip' : 'invalid-tooltip'}`}>
+                {`${validity.cost ? 'OK' : 'данные не получены.'}`}
               </div>
             </div>
             <div className="col-md-1"></div>
@@ -631,26 +653,26 @@ function App() {
                 <label htmlFor="" className="form-label">Поставщики:</label>
                 <div className="form-check">
                   <input
-                    className="form-check-input"
+                    className="plants form-check-input"
                     type="radio"
                     name="flexRadioDefault"
                     id="flexRadioDefault1"
                     checked={selectedOption === 'plants'}
-                    onChange={handleRadioChange}
+                    onChange={(e) => handleRadioChange(e, setSelectedOption)}
                     disabled={openEditBasketUI}
                   />
                   <label className="form-check-label" htmlFor="flexRadioDefault1">
-                    заводы или
+                    заводы
                   </label>
                 </div>
                 <div className="form-check">
                   <input
-                    className="form-check-input"
+                    className="warehouses form-check-input"
                     type="radio"
                     name="flexRadioDefault"
                     id="flexRadioDefault2"
                     checked={selectedOption === 'warehouses'}
-                    onChange={handleRadioChange}
+                    onChange={(e) => handleRadioChange(e, setSelectedOption)}
                     disabled={openEditBasketUI}
                   />
                   <label className="form-check-label" htmlFor="flexRadioDefault2">
@@ -668,7 +690,7 @@ function App() {
                   products,
                   formData,
                   setFormData,
-                  setValidity,
+                  setValidity
                 )}
                 onKeyDown={(e) => handleKeyDown(e)}
                 required
@@ -686,7 +708,30 @@ function App() {
                 {`${validity.suppliers ? 'OK' : 'Выберите поставщика.'}`}
               </div>
             </div>
-            <div className="col-md-3"></div>
+            <div className="col position-relative">
+              <label htmlFor="cost" className="form-label">Цена за еденицу</label>
+              <input
+                type="text"
+                className={`form-control ${validity.cost ? 'is-valid' : 'is-invalid'}`}
+                id="cost"
+                name="cost"
+                value={formData.cost}
+                onChange={(e) => handleChange(
+                  e,
+                  products,
+                  formData,
+                  setFormData,
+                  setValidity
+                )}
+                onKeyDown={(e) => handleKeyDown(e)}
+                required
+                readOnly
+              />
+              <div className={`${validity.cost ? 'valid-tooltip' : 'invalid-tooltip'}`}>
+                {`${validity.cost ? 'OK' : 'данные не получены.'}`}
+              </div>
+            </div>
+            <div className="col-md-1"></div>
             <div className="h-5 d-inline-block">
               <ul>
                 <li className={`${openFormUI ? "" : "d-none"}`}><span>openFormUI</span></li>
